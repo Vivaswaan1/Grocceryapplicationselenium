@@ -1,0 +1,7 @@
+test\ManageNewsTest.class
+automationcore\Testngbase.class
+test\Adminuserstest.class
+reportGeneration\Listeners.class
+retryAnalyzer\Retry.class
+test\Logintest.class
+test\Hometest.class

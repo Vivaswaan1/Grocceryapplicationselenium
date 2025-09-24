@@ -1,0 +1,11 @@
+utilities\Screenshotutility.class
+utilities\RandomDataUtility.class
+constants\Constant.class
+page\Homepage.class
+page\Adminuserspage.class
+utilities\ExtentReportUtility.class
+utilities\ExcelUtility.class
+utilities\WaitUtility.class
+page\Loginpage.class
+page\Managenewspage.class
+utilities\PageUtility.class

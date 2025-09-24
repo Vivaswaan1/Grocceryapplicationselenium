@@ -1,0 +1,842 @@
+***@Test(priority=1,description="successful login using valid creds")
+@Test(priority=2,description="unsuccessful login using invalid username")
+
+
+
+
+if a class contains too many test case, we can give priority and description, as above
+
+
+
+
+*** screen shot utility
+
+Screenshot: Required when a failure occurs.
+    1. Create ScreenshotUtility Class
+    2. This code is given in Base class, in @After method
+	public void driverQuit(ITestResult iTestResult) throws IOException {
+		if (iTestResult.getStatus() == ITestResult.FAILURE) {
+			ScreenshotUtility screenShot = new ScreenshotUtility();
+			screenShot.getScreenshot(driver, iTestResult.getName());
+			}
+			driver.quit();
+		}
+
+    3. Make an error in Login pgm and execute
+    4. After this Refresh, and a new folder ‘OutputScreenshot’ appears in the left panel under project Hierarchy.
+    
+    
+    
+    
+   *** code for screen shot utility:
+    
+    package utilities;
+
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.io.FileHandler;
+
+public class Screenshotutility {
+	
+	public void getScreenshot(WebDriver driver, String failedTestCase) throws IOException {
+
+		TakesScreenshot scrShot = (TakesScreenshot) driver;
+		File screenShot = scrShot.getScreenshotAs(OutputType.FILE);
+
+		String timeStamp = new SimpleDateFormat("dd_MM_yyyy_hh_mm_ss").format(new Date());
+
+		File f1 = new File(System.getProperty("user.dir") + "//OutputScreenShot");// create file in directory
+		if (!f1.exists()) {
+
+			f1.mkdirs();
+		}
+		String destination = System.getProperty("user.dir") + "//outputScreenShot//" + failedTestCase + timeStamp
+				+ ".png";
+		// String destination = f1.getPath() + "//" + failedTestCase + timeStamp +
+		// ".png";
+
+		File finalDestination = new File(destination);
+		FileHandler.copy(screenShot, finalDestination);
+	}
+	
+	
+	
+	***make a failed test case, and refresh the project, outputscreenshot folder will appear.
+	
+	
+***	XML Configuration
+
+Now we Run and Debug manually.
+Ideally, it should be through xml file
+Create xml File
+
+Right click on project>>Test NG>>convert to TestNG, TestNG.xml file will be created.
+
+
+***Include and Exclude Methods:
+
+if we want to include only 1 method for a class,include one method only like this:
+
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="Suite">
+  <test thread-count="5" name="Test">
+    <classes>
+      <class name="test.Logintest">
+      <methods>
+      <include name="verifylogintestvalidcredentials"></include>
+      </methods>
+      </class>
+    </classes>
+  </test> <!-- Test -->
+</suite> <!-- Suite -->
+
+
+
+Exclude:
+
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="Suite">
+  <test thread-count="5" name="Test">
+    <classes>
+      <class name="test.Logintest">
+      <methods>
+      <include name="verifylogintestvalidcredentials"></include>
+      <exclude name="verifytestcredentialsusinginvalidusername"></exclude>
+      
+      </methods>
+      </class>
+    </classes>
+  </test> <!-- Test -->
+</suite> <!-- Suite -->
+
+
+
+***Faker Class:In Utilities package, create a class, RandomDataUtility.java and add the code
+
+	Faker faker = new Faker();
+
+	public String createRandomUsername() {
+		return faker.name().username();
+
+	}
+
+	public String createRandomPassword() {
+		return faker.internet().password();
+	}
+
+	public String createRandomEmail() {
+		return faker.internet().emailAddress();
+	}
+
+	public String createRandomFullName() {
+		return faker.name().fullName();
+	}
+
+	public String createRandomPhoneNumber() {
+		return faker.phoneNumber().cellPhone();
+	}
+
+	public String createRandomText()
+	{
+		return faker.lorem().sentence();
+	}
+	
+	For this we need to add dependency in POM.xml
+	
+	<dependency>
+			<groupId>com.github.javafaker</groupId>
+			<artifactId>javafaker</artifactId>
+			<version>0.15</version>
+		</dependency>
+		
+		
+		In Invalidusername and password, we are going to try this faker. first create an object of Faker class
+		
+		Faker faker=new Faker();
+		String UserName=faker.name().username();   //will take random values
+		String password = ExcelUtility.getStringData(2, 1, "Login");
+	
+	  /*String UserName = ExcelUtility.getStringData(2, 0, "Login");
+	String password = ExcelUtility.getStringData(2, 1, "Login");*/
+		Loginpage invalidusername=new Loginpage(driver);
+		invalidusername.enterUsernameOnUsernameField(UserName);
+		invalidusername.enterpasswordonpasswordfield(password);
+		invalidusername.clicksignin();
+	}
+	
+	line of codes for invalid username and invalid password
+	
+	Faker faker=new Faker();
+	   String UserName=faker.name().username();
+	   String password=faker.internet().password();
+	
+	
+	Use Faker class for random datas or invalid username or password fields
+	
+	
+	***Created for testcases 2,4 in Logintest.java in grocer project. commented. please check.
+	
+	***  Extent Reports:
+	
+	Extent Report Utility.
+	under Utilities package>>create ExtentReportUtility
+	
+	Code:
+	
+		public static final ExtentReports extentReports = new ExtentReports();// static instance of extentreports that can
+	// be shared accross the application
+
+	public synchronized static ExtentReports createExtentReports() {
+
+	ExtentSparkReporter reporter = new ExtentSparkReporter("./extent-reports/extent-report.html");
+	reporter.config().setReportName("7RMartSupermarketProject");
+	extentReports.attachReporter(reporter);
+
+	extentReports.setSystemInfo("Organization", "Obsqura");
+	extentReports.setSystemInfo("Name", " Rekha"); // provides context of the report
+	return extentReports;
+
+	}
+	
+	***Add dependency Aventstack for Extent Reports:
+	<dependency>
+			<groupId>com.aventstack</groupId>
+			<artifactId>extentreports</artifactId>
+			<version>5.0.9</version>
+		</dependency>
+	
+	Create a package reportGenertaion in test/java and create a class Listeners.
+	
+	
+	***Code:
+	
+	
+	
+	ExtentTest test;
+ExtentReports extent = ExtentReportUtility.createExtentReports();
+ThreadLocal<ExtentTest> extentTest = new ThreadLocal<ExtentTest>();
+
+public void onTestStart(ITestResult result) {
+
+ITestListener.super.onTestStart(result);
+test = extent.createTest(result.getMethod().getMethodName());
+extentTest.set(test);
+
+}
+
+public void onTestSuccess(ITestResult result) {
+
+ITestListener.super.onTestSuccess(result);
+extentTest.get().log(Status.PASS, "Test Passed");
+
+}
+
+public void onTestFailure(ITestResult result) {
+
+ITestListener.super.onTestFailure(result);
+
+extentTest.get().log(Status.FAIL, "Test Failed");
+extentTest.get().fail(result.getThrowable());
+
+WebDriver driver = null;
+
+String testMethodName = result.getMethod().getMethodName();
+
+try {
+
+driver = (WebDriver) result.getTestClass().getRealClass().getDeclaredField("driver")
+.get(result.getInstance());
+} catch (IllegalArgumentException e) {
+
+e.printStackTrace();
+} catch (IllegalAccessException e) {
+
+e.printStackTrace();
+} catch (NoSuchFieldException e) {
+
+e.printStackTrace();
+} catch (SecurityException e) {
+
+e.printStackTrace();
+}
+
+try {
+driver = (WebDriver) result.getTestClass().getRealClass().getDeclaredField("driver")
+.get(result.getInstance());
+} catch (Exception e) {
+}
+}
+
+public void onTestSkipped(ITestResult result) {
+
+ITestListener.super.onTestSkipped(result);
+extentTest.get().log(Status.SKIP, "Test Skipped");
+String testMethodName = result.getMethod().getMethodName();
+
+}
+
+public void onTestFailedButWithinSuccessPercentage(ITestResult result) {
+
+ITestListener.super.onTestFailedButWithinSuccessPercentage(result);
+}
+
+public void onTestFailedWithTimeout(ITestResult result) {
+
+ITestListener.super.onTestFailedWithTimeout(result);
+}
+
+public void onStart(ITestContext context) {
+
+ITestListener.super.onStart(context);
+}
+
+public void onFinish(ITestContext context) {
+
+ITestListener.super.onFinish(context);
+extent.flush();
+
+
+
+****** Listeners>>>>>>
+
+public class Listeners extends Testngbase(Base class) implements ITestListener(Pre defined Interface)
+on test pass, on test failure
+green upper arrow-------------------> overriding
+all methods will override from ITestListener.
+if we add ITestlistener, then only all methods will override from ITestListener.
+Right click on ITestlistener and select open declaration
+will view the back end code.these methods will override as we see in code.
+
+*****On Test Start:
+
+will invoke before Test execution
+
+get method, get method-name
+fetch method-name and attach to report
+
+
+****On Test success:
+
+invoke when test case is success.
+status will show as pass and in details will show as test -pass.
+
+
+*****On test failure:
+
+when test case is failed, on test failed will be invoked.
+
+IllegalArgumentException,.....is reason when test is failed.
+
+in report will attach in report format as Exception.
+
+*****On skip, On finish....>>>flush method means if the above methods needs to fetch and add  in reports, flush method should be there.
+
+
+******** Listeners tag is created in Testng.xml below suite
+<listeners>
+<listener class-name="reportGeneration.Listener"></listener></listeners>
+
+after this, run a class with methods, run as test ng suite, right click the project and refresh, now the Extent-reports will come.
+
+report will shown in extent reports.
+
+*******Assertion:
+
+kind of validation
+
+when test case is run, it is pass, but just for reassurance.for validating.
+if we validate 10 test cases, assertion should be there in all ten test cases.
+Assertion are of two types:
+Hard Assertion and Soft Assertion
+
+we use Hard assertion.if we can we can use soft asseetion, there are few complications.
+for soft assertion, we need ti create an object mfor soft assertion class to access the methods.
+for soft assertion, we need to declare Assert all method. after that only we can declare other methods.  so we are using Hard assertion.
+
+Main methods are Assert true, Assert False abd Assert equals.
+
+Assert true and False return a Boolean Value. 
+Assert true and Assert false uses method: is enabled, is displayed, is selected.
+
+Assert true, the expectation would be output is true.
+
+
+Take login test case
+
+verifyuserloginwithvalid creds..we give user name, password, clicked sign in and goes to home page.
+
+if we land on home page, driver landed on home page, then true.
+
+take home page. Dashboard tile>>inspect and create a web element in login page.
+
+want to check if dashboard is displayed.
+
+public boolean isdashboarddisplayed()
+{
+return dashboard.isdisplayed;
+}
+
+come to test case
+
+boolean dashboarddisplay=loginpage.method
+Assert.asserttrue(dashboard display,"user couldnt login with valid creds")
+
+
+*********Assertion refer the Loginpage and Logintest for Grocer.
+
+*********Assert equals
+
+when actual and expected matches, we use assert equals.(to check)
+
+take 2 nd test case.
+
+landing page is login page only
+create webelement for heading 7rmartsupermarket(login title)
+we have to get text
+public string gettitletext()
+{
+    return login title.gettext();
+    
+    
+    
+    ********Wait commands
+    when driver runs fast, we cannot see anything.
+    tp pause the driver,we use the wait commands.
+    3 types of wait commands
+    
+   implicit wait, explicit wait, fluent wait.
+   Implicit wait:
+   we are pausing the driver.mottos for all drivers are same , but there are some differences.
+   Implicit wait: we use this when we launch a driver. we give it in the base class.
+   when browser launch, login page will open, user name , password foileds and sign in button will be there.
+   when we apply implicit wait in base class, it will apply for the complete elements of that class. if we give 5 sec of implicit wait, it will give implicit wait for all the elements of that class
+   that is the drawback. 
+   when browserlaunch, elements will take longer to load, so we give in base class for browser launch.
+   driver will check each 0.5 sec, to check if the elements have loaded.
+   
+   
+   
+   public class Testngbase {
+	
+	public WebDriver driver;
+	@BeforeMethod
+	public void initializebrowser()
+	{
+	
+	driver=new ChromeDriver();
+	driver.get("https://groceryapp.uniqassosiates.com/admin/login");
+	driver.manage().window().maximize();
+	driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(5));
+	//where Duration is the class.
+	
+	
+	**********Explicit wait:
+	we use this commonly
+	when we login and use explicit wait. load issue is with login button only. so we can use the explicit wait. relates to focussing the element and applying wait.
+	take the older web element commands.
+	applying wait for a element-button
+	before button.click, place the cursor.
+	WebDriver wait (contrlspace)
+	
+	*********************************
+	WebDriverWait wait=new WebDriverWait(driver,Duration.ofSeconds(5));
+	wait.until(ExpectedConditions.elementToBeClickable(bttn));//choose method relatable to our element
+	when we run , it will wait for 5 sec.
+	
+	
+	Fluent wait******************(wont use)
+	focuss on sigle element. we have to set the calling time.
+	if we total 5 sec.if element not found, and exception can be omitted(Demerits)
+	
+	Element.clickable
+	
+	
+	wait (interface)<WebDriver> fluent=new FluentWait<WebDriver>(driver).withtimeout(Duration.ofseconds(5))
+	.callingevery(Duration.ofseconds(2)).ignoring(no such element exception)
+	
+	condition
+	
+	fluent.until expected conditions(element to be clickable);
+	
+	***************************************************************************
+	
+	
+	create extent report utility:
+	---------------------------------------------------
+	
+	selenium cant create repot on its own. integrated with test ng.customised detailed html report.
+	
+	Types of testing:
+	
+	***************Cross Browser Testing:
+	
+	to ensure testing is done in all browsers
+	have to do in xml file
+	take a copy of testng.xml file paste in project and change nam to crossbrowser.xml.
+	base class has chrome driver. and it is  not proper way to change browser again and again in base class.
+	whenever we give different browsers, it has to run on different browsers. thats y we give parameterisation.
+	@Parameters.
+	take base class.
+	
+	
+	public class Testngbase {
+	
+	public WebDriver driver;
+	@BeforeMethod
+	@Parameters("browser")               //have to add
+	public void initializebrowser(String browser) throws Exception   //have to add string browser in brackets
+	{
+		if (browser.equalsIgnoreCase("chrome"))   //if c is caps or small no problems 
+		{
+			driver=new ChromeDriver();
+		}
+		else if(browser.equalsIgnoreCase("edge"))
+		{
+			driver=new EdgeDriver();
+		}
+		else if(browser.equalsIgnoreCase("Firefox"))
+		{
+			driver=new FirefoxDriver();
+		}
+		
+		else
+		{
+			throw new Exception("invalid browser");
+		}
+	
+	
+	from @parameters till else...this code has to add for cross browser testing.
+	
+	
+	
+	**************************in crossbrowser.xml file:
+	<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="Crossbrowser">
+
+  <test thread-count="5" name="Chrometest">
+  <parameter name="browser" value="chrome"></parameter>
+    <classes>
+      <class name="test.Logintest">
+      <methods>
+      <include name="verifylogintestvalidcredentials"></include>
+      <!--include name="verifytestcredentialsusinginvalidusername"></include>
+      <include name="verifytestcredentialsusinginvalidpassword"></include>
+      <include name="verifytestusinginvalidcredentials"></include>-->
+      
+      </methods>
+      </class>
+    </classes>
+  </test> <!-- Test -->
+</suite> <!-- Suite -->
+
+
+copy paste from test tage and change to edge and firefox.
+
+if edge does not work then in base class, 
+
+add the codes
+
+public void initializebrowser(String browser) throws Exception
+	{
+		if (browser.equalsIgnoreCase("chrome"))   //if c is caps or small no problems 
+		{
+			driver=new ChromeDriver();
+		}
+		else if(browser.equalsIgnoreCase("edge"))
+		{
+			WebDriverManager.edgedriver()
+			.clearResolutionCache()
+		    .forceDownload()
+		    .setup();
+			driver=new EdgeDriver();
+		}
+		else if(browser.equalsIgnoreCase("Firefox"))
+		{
+			driver=new FirefoxDriver();
+		}
+		
+		else
+		{
+			throw new Exception("invalid browser");
+		}
+		
+		
+		add the dependency also
+		
+			<dependency>
+			<groupId>io.github.bonigarcia</groupId>
+			<artifactId>webdrivermanager</artifactId>
+			<version>6.2.0</version> <!-- Updated version -->
+			<scope>test</scope>       <!-- Optional: can use compile or test as needed -->
+		</dependency>
+		
+		
+		
+		
+	**********************************	Grouping:-
+	categorize the class to two groups.then will call as groupA, Group B.
+	we will add some test cases under group A and Group B and will execiute.
+	
+	will do three groupings, sanity, regression, smoke
+	smoke testing-important functionalities
+	sanity testing-testing 
+	for groups,
+	@beforemethod and @aftermethod  use(alwaysRun=true)
+	
+	@BeforeMethod(alwaysRun=true)
+	@AfterMethod(alwaysRun=true)
+	
+	******************************groupingxml file
+	
+	<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="grouping">
+<parameter name="browser" value="chrome"></parameter>
+
+  <test thread-count="5" name="grouping">
+  <groups><run><include name="smoke"></include></run></groups>
+    <classes>
+      <class name="test.Logintest">
+      <!--methods>
+      <include name="verifylogintestvalidcredentials"></include>
+      <include name="verifytestcredentialsusinginvalidusername"></include>
+      <include name="verifytestcredentialsusinginvalidpassword"></include>
+      <include name="verifytestusinginvalidcredentials"></include>
+      
+      </methods>-->
+      </class>
+    </classes>
+  </test> <!-- Test -->
+</suite> <!-- Suite -->
+	----------------------------------------------------------
+	
+	
+	Retry Analyzer
+	
+	create package retry Analyzer and class retry
+	
+	package retryAnalyzer;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.testng.IRetryAnalyzer;
+import org.testng.ITestResult;
+
+public class Retry implements IRetryAnalyzer{
+	
+	private static final Logger LOG = (Logger) LogManager.getLogger("Retry.class");
+	private static final int maxTry = 2;
+	private int count = 0;
+
+	@Override
+	public boolean retry(final ITestResult iTestResult) {
+	if (!iTestResult.isSuccess()) {
+	if (this.count < maxTry) {
+	LOG.info("Retrying test " + iTestResult.getName() + " with status "
+	+ getResultStatusName(iTestResult.getStatus()) + " for the " + (this.count + 1) + " time(s).");
+	this.count++;
+	return true;
+	}
+	}
+	return false;
+	}
+
+	public String getResultStatusName(final int status) {
+	String resultName = null;
+	if (status == 1) {
+	resultName = "SUCCESS";
+	}
+	if (status == 2) {
+	resultName = "FAILURE";
+	}
+	if (status == 3) {
+	resultName = "SKIP";
+	}
+	return resultName;
+	}
+
+
+}
+	Max try=2, means, after excuting the retry test case, it will re execute two more times., in total it will execute 3 times. count=it needs tracking, for that we use count variable. max try =2.
+	it will excute 1 time and re excute 3 times. flaky test cases some times may pass. the test case may pass. if it not pass, it will fail and test case will consider as fail.
+	
+	
+	retryAnalyzer=retryAnalyzer.Retry.class
+	Apply in test case like this.
+	
+	***********************Constatnts.
+	
+	we can create a package constants and class constant in main/java
+	package constants;
+
+public class Constant {
+	
+	public static final String VALIDCREDENTIALERROR = "User could not login with valid credential";
+	public static final String INVALIDUSERNAMEERROR="User could not login with invalid user name";
+	public static final String INVALIDPASSWORDERROR="User could not login with invalid password";
+	public static final String INVALIDCREDENTIALERROR="User could not login with invalid credentials";
+
+}
+	we can create own set of scripts using public static final string
+	
+	we can use this in assert.true
+	
+	Assert.assertTrue(alertforinvalidusername,Constant.INVALIDUSERNAMEERROR);
+	
+	class name.variable name
+	
+	-------------------------------------------------------------------------------------------------------------------
+	
+	
+	*****************************************************
+	
+	Adding URL and Excel path as Constants>>constant
+	
+	in constant class
+	
+	public static final String EXCELPATH=System.getProperty("user.dir")+"\\src\\test\\resources\\logincreds2.xlsx";
+	public static final String CONFIGFILE=System.getProperty("user.dir")+"\\src\\main\\resources\\Config.properties";
+	
+	in src/main/resources
+	add file Config.properties and inside the file, url=url=https://groceryapp.uniqassosiates.com/admin/login
+	
+	in base class, add these above @beforemethod
+	Properties prop;
+	public WebDriver driver;
+	FileInputStream fs;
+	
+	
+	Add these after the method initialize browser()
+	{
+	prop=new Properties();
+		fs=new FileInputStream(Constant.CONFIGFILE);
+		prop.load(fs);
+		
+		comment the url and use this
+		
+		driver.get(prop.getProperty("url"));
+		
+		in Excel utility,
+		
+		the url will be replaced like this>>>>> constant.ExcelPath
+		
+		f = new FileInputStream(Constant.EXCELPATH);
+		
+		
+		
+		
+		--------------------------------------------------------
+		
+		
+		
+		Utility
+		2 types:
+		page utility, wait utility
+		
+		page utility: moouse scroll up, scroll down, drop down selection,
+		javascript click, all are declared by pageutility class
+		
+		
+		
+		
+		----------------------------------------------------------
+		
+		
+		Data Provider.
+		Test ng provides annotation.
+		instead of reading from excel, we can use Data p[rovider.
+		@dataprovider
+		
+		we can give this code at the end of test case
+		
+		@DataProvider(name = "loginProvider") // Any name can be given
+	public Object[][] getDataFromDataProvider() throws IOException 
+	{ // userdefined method
+
+		return new Object[][] {  new Object[]{"admin123","admin123"}//pairs of user name and password.
+																//Both pairs will be executed here. More pairs can be added
+				// new Object[] {ExcelUtility.getStringData(3,
+				// 0,"Login"),ExcelUtility.getStringData(3,1 ,"Login")}
+		
+	};
+	
+	in the test case,
+	@Test(priority=4,description="unsuccessful login using invalid creds",dataProvider="loginProvider")
+	data provider=name.
+	
+	----------------------------------------------------------------
+	
+	
+	chaining of pages.
+	
+	
+		
+		
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+   
+   
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+}
+
+
+
+
+	
+	
+	
+
+
+
+
+
+
+
+
+
+
+	
+	
+	
+	

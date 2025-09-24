@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="grouping">
+
+  <test thread-count="5" name="grouping1">
+  
+  <parameter name="browser" value="chrome"></parameter>
+  <groups><run><include name="smoke"></include></run></groups>
+    <classes>
+      <class name="test.Logintest">
+      
+      </class>
+      <class name="test.Hometest">
+      
+      </class>
+      <class name="test.Adminuserstest">
+      
+       </class>
+       <class name="test.ManageNewsTest">
+      
+      </class>
+      
+    </classes>
+  </test> <!-- Test -->
+  
+  <test thread-count="5" name="grouping2">
+  
+
+  <parameter name="browser" value="chrome"></parameter>
+  <groups><run><include name="regression"></include></run></groups>
+    <classes>
+      <class name="test.Logintest">
+      
+      </class>
+      <class name="test.Hometest">
+      
+      </class>
+      <class name="test.Adminuserstest">
+      
+       </class>
+       <class name="test.ManageNewsTest">
+      
+      </class>
+      
+    </classes>
+  </test> <!-- Test -->
+  
+  
+  <test thread-count="5" name="grouping3">
+  
+
+  <parameter name="browser" value="chrome"></parameter>
+  <groups><run><include name="sanity"></include></run></groups>
+    <classes>
+      <class name="test.Logintest">
+      
+      </class>
+      <class name="test.Hometest">
+      
+      </class>
+      <class name="test.Adminuserstest">
+      
+       </class>
+       <class name="test.ManageNewsTest">
+      
+      </class>
+      
+    </classes>
+  </test> <!-- Test -->
+</suite> <!-- Suite -->
+
